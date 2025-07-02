@@ -3,7 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#ff6b6b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="FoodOrder">
+    <meta name="description" content="AI-powered restaurant ordering app for Nagaram Dammaiguda">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="./manifest.json">
+    
+    <!-- Icons -->
+    <link rel="apple-touch-icon" href="./icons/icon-192.png">
+    <link rel="icon" type="image/png" href="./icons/icon-192.png">
+    <link rel="shortcut icon" href="./icons/icon-192.png">
+    
     <title>Restaurant Ordering App - Nagaram Dammaiguda</title>
+    
     <style>
         * {
             margin: 0;
@@ -576,11 +593,53 @@
             color: #666;
         }
 
+        /* PWA Install Button */
+        .install-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+            z-index: 1000;
+            display: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .install-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(255, 107, 107, 0.5);
+        }
+
+        /* Offline Indicator */
+        .offline-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #dc3545;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            font-size: 14px;
+            z-index: 1001;
+            display: none;
+        }
+
         @media (max-width: 480px) {
+            body {
+                padding: 0;
+            }
+            
             .app-container {
-                width: 95%;
-                height: 90vh;
-                margin: 20px;
+                width: 100vw;
+                height: 100vh;
+                border-radius: 0;
             }
             
             .action-btn {
@@ -591,6 +650,16 @@
     </style>
 </head>
 <body>
+    <!-- Offline Indicator -->
+    <div class="offline-indicator" id="offlineIndicator">
+        📡 You're offline. Some features may not work.
+    </div>
+
+    <!-- PWA Install Button -->
+    <button class="install-button" id="installButton">
+        📱 Install App
+    </button>
+
     <div class="app-container">
         <div class="app-header">
             <button class="back-btn" id="backBtn" onclick="goBack()">← Back</button>
@@ -753,6 +822,7 @@
         let currentRestaurant = null;
         let cart = [];
         let selectedPaymentMethod = 'card';
+        let deferredPrompt;
 
         // Restaurant database with menus
         const restaurantDatabase = {
@@ -831,6 +901,48 @@
                 }
             ]
         };
+
+        // PWA Installation
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('installButton').style.display = 'block';
+        });
+
+        document.getElementById('installButton').addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log(`User response to the install prompt: ${outcome}`);
+                deferredPrompt = null;
+                document.getElementById('installButton').style.display = 'none';
+            }
+        });
+
+        // Online/Offline Detection
+        window.addEventListener('online', () => {
+            document.getElementById('offlineIndicator').style.display = 'none';
+        });
+
+        window.addEventListener('offline', () => {
+            document.getElementById('offlineIndicator').style.display = 'block';
+        });
+
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then((registration) => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch((registrationError) => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+
+        // All other JavaScript functions remain the same...
+        // [Previous JavaScript code continues here - UI Management, Chat, Menu, Cart, Payment, Tracking functions]
 
         // UI Management Functions
         function showSection(section) {
