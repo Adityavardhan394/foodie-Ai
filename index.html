@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Ordering App - Nagaram Dammaiguda</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .app-container {
+            width: 400px;
+            height: 600px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .app-header {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 20px 80px 20px 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .app-header h1 {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .app-header p {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .back-btn {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 14px;
+            display: none;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-50%) scale(1.05);
+        }
+
+        .cart-icon {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .cart-icon:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-50%) scale(1.05);
+        }
+
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ffc107;
+            color: #333;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .status-indicator {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 8px;
+            height: 8px;
+            background: #2ecc71;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+            z-index: 1;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+
+        /* Chat Styles */
+        .chat-messages {
+            padding: 20px;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .message.bot .message-content {
+            background: white;
+            color: #333;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .message.user .message-content {
+            background: #007bff;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .restaurant-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin: 10px 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-left: 4px solid #ff6b6b;
+            position: relative;
+        }
+
+        .restaurant-name {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .restaurant-details {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .restaurant-rating {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+
+        .view-menu-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s ease;
+        }
+
+        .view-menu-btn:hover {
+            background: #218838;
+        }
+
+        /* Menu Styles */
+        .menu-container {
+            display: none;
+            padding: 20px;
+        }
+
+        .menu-category {
+            margin-bottom: 25px;
+        }
+
+        .category-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #ff6b6b;
+        }
+
+        .menu-item {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-name {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .item-description {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .item-price {
+            font-weight: bold;
+            color: #28a745;
+            font-size: 14px;
+        }
+
+        .add-to-cart-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s ease;
+        }
+
+        .add-to-cart-btn:hover {
+            background: #0056b3;
+        }
+
+        /* Cart Styles */
+        .cart-container {
+            display: none;
+            padding: 20px;
+        }
+
+        .cart-item {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cart-item-info {
+            flex: 1;
+        }
+
+        .cart-item-name {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .cart-item-restaurant {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .qty-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .qty-btn.plus {
+            background: #28a745;
+        }
+
+        .cart-total {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-left: 4px solid #28a745;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .total-row.final {
+            font-weight: bold;
+            font-size: 16px;
+            border-top: 1px solid #eee;
+            padding-top: 8px;
+        }
+
+        .checkout-btn {
+            width: 100%;
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background 0.3s ease;
+        }
+
+        .checkout-btn:hover {
+            background: #218838;
+        }
+
+        .checkout-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+
+        /* Payment Styles */
+        .payment-container {
+            display: none;
+            padding: 20px;
+        }
+
+        .payment-form {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .payment-methods {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .payment-method {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .payment-method.selected {
+            border-color: #007bff;
+            background: #e3f2fd;
+        }
+
+        /* Order Tracking Styles */
+        .tracking-container {
+            display: none;
+            padding: 20px;
+        }
+
+        .order-status {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .status-timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .status-step {
+            position: relative;
+            padding-bottom: 20px;
+        }
+
+        .status-step:before {
+            content: '';
+            position: absolute;
+            left: -22px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #dee2e6;
+        }
+
+        .status-step.completed:before {
+            background: #28a745;
+        }
+
+        .status-step.active:before {
+            background: #007bff;
+            animation: pulse 2s infinite;
+        }
+
+        .status-step:after {
+            content: '';
+            position: absolute;
+            left: -17px;
+            top: 17px;
+            width: 2px;
+            height: calc(100% - 12px);
+            background: #dee2e6;
+        }
+
+        .status-step:last-child:after {
+            display: none;
+        }
+
+        .status-step.completed:after {
+            background: #28a745;
+        }
+
+        .quick-actions {
+            padding: 15px 20px;
+            background: white;
+            border-top: 1px solid #eee;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            text-align: center;
+            min-width: 120px;
+        }
+
+        .action-btn:hover {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+            transform: translateY(-2px);
+        }
+
+        .input-area {
+            display: flex;
+            gap: 10px;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 25px;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .message-input:focus {
+            border-color: #007bff;
+        }
+
+        .send-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .send-btn:hover {
+            background: #0056b3;
+        }
+
+        .empty-cart {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        @media (max-width: 480px) {
+            .app-container {
+                width: 95%;
+                height: 90vh;
+                margin: 20px;
+            }
+            
+            .action-btn {
+                min-width: 100px;
+                font-size: 11px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="app-header">
+            <button class="back-btn" id="backBtn" onclick="goBack()">← Back</button>
+            <div class="status-indicator"></div>
+            <button class="cart-icon" onclick="showCart()">
+                🛒 Cart
+                <span class="cart-count" id="cartCount">0</span>
+            </button>
+            <h1 id="headerTitle">Restaurant Finder AI</h1>
+            <p id="headerSubtitle">Nagaram Dammaiguda, Hyderabad</p>
+        </div>
+        
+        <div class="main-content">
+            <!-- Chat Section -->
+            <div id="chatSection">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message bot">
+                        <div class="message-content">
+                            👋 Hello! I'm your restaurant finder assistant for Nagaram Dammaiguda area. I can help you discover great places to eat nearby. What are you looking for today?
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Menu Section -->
+            <div class="menu-container" id="menuSection">
+                <!-- Menu items will be populated here -->
+            </div>
+
+            <!-- Cart Section -->
+            <div class="cart-container" id="cartSection">
+                <div id="cartItems"></div>
+                <div class="cart-total" id="cartTotal" style="display: none;">
+                    <div class="total-row">
+                        <span>Subtotal:</span>
+                        <span id="subtotal">₹0</span>
+                    </div>
+                    <div class="total-row">
+                        <span>Delivery Fee:</span>
+                        <span id="deliveryFee">₹40</span>
+                    </div>
+                    <div class="total-row">
+                        <span>GST (5%):</span>
+                        <span id="gst">₹0</span>
+                    </div>
+                    <div class="total-row final">
+                        <span>Total:</span>
+                        <span id="finalTotal">₹0</span>
+                    </div>
+                </div>
+                <button class="checkout-btn" id="checkoutBtn" onclick="showPayment()" disabled>
+                    Proceed to Checkout
+                </button>
+            </div>
+
+            <!-- Payment Section -->
+            <div class="payment-container" id="paymentSection">
+                <div class="payment-form">
+                    <h3 style="margin-bottom: 20px;">Payment Details</h3>
+                    
+                    <div class="payment-methods">
+                        <div class="payment-method selected" onclick="selectPaymentMethod('card')">
+                            💳 Card
+                        </div>
+                        <div class="payment-method" onclick="selectPaymentMethod('upi')">
+                            📱 UPI
+                        </div>
+                        <div class="payment-method" onclick="selectPaymentMethod('cod')">
+                            💵 COD
+                        </div>
+                    </div>
+
+                    <div id="cardDetails">
+                        <div class="form-group">
+                            <label class="form-label">Card Number</label>
+                            <input type="text" class="form-input" placeholder="1234 5678 9012 3456" maxlength="19">
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <div class="form-group" style="flex: 1;">
+                                <label class="form-label">Expiry</label>
+                                <input type="text" class="form-input" placeholder="MM/YY" maxlength="5">
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label class="form-label">CVV</label>
+                                <input type="text" class="form-input" placeholder="123" maxlength="3">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="upiDetails" style="display: none;">
+                        <div class="form-group">
+                            <label class="form-label">UPI ID</label>
+                            <input type="text" class="form-input" placeholder="yourname@paytm">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Delivery Address</label>
+                        <textarea class="form-input" rows="3" placeholder="Enter your complete address"></textarea>
+                    </div>
+
+                    <button class="checkout-btn" onclick="processPayment()">
+                        Pay ₹<span id="paymentTotal">0</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Order Tracking Section -->
+            <div class="tracking-container" id="trackingSection">
+                <div class="order-status">
+                    <h3 style="margin-bottom: 20px;">Order #<span id="orderNumber"></span></h3>
+                    <div class="status-timeline">
+                        <div class="status-step completed">
+                            <strong>Order Confirmed</strong>
+                            <div style="font-size: 12px; color: #666;">Your order has been received</div>
+                        </div>
+                        <div class="status-step active">
+                            <strong>Preparing Food</strong>
+                            <div style="font-size: 12px; color: #666;">Restaurant is preparing your order</div>
+                        </div>
+                        <div class="status-step">
+                            <strong>Out for Delivery</strong>
+                            <div style="font-size: 12px; color: #666;">Your order is on the way</div>
+                        </div>
+                        <div class="status-step">
+                            <strong>Delivered</strong>
+                            <div style="font-size: 12px; color: #666;">Order delivered successfully</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                    <h4 style="margin-bottom: 15px;">Estimated Delivery Time</h4>
+                    <div style="font-size: 24px; font-weight: bold; color: #28a745; text-align: center;">
+                        <span id="deliveryTime">25-30 mins</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="quick-actions" id="quickActions">
+            <div class="action-buttons">
+                <button class="action-btn" onclick="findNearbyRestaurants()">🍽️ Nearby Restaurants</button>
+                <button class="action-btn" onclick="findByCategory('fast-food')">🍔 Fast Food</button>
+                <button class="action-btn" onclick="findByCategory('indian')">🍛 Indian Food</button>
+                <button class="action-btn" onclick="findByCategory('cafe')">☕ Cafes</button>
+                <button class="action-btn" onclick="trackOrder()">📦 Track Order</button>
+            </div>
+            
+            <div class="input-area">
+                <input type="text" class="message-input" id="messageInput" placeholder="Ask me about restaurants..." onkeypress="handleKeyPress(event)">
+                <button class="send-btn" onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let currentView = 'chat';
+        let currentRestaurant = null;
+        let cart = [];
+        let selectedPaymentMethod = 'card';
+
+        // Restaurant database with menus
+        const restaurantDatabase = {
+            nearby: [
+                {
+                    id: 'bawarchi',
+                    name: "Bawarchi Restaurant",
+                    cuisine: "Hyderabadi Biryani",
+                    rating: 4.3,
+                    distance: "0.8 km",
+                    address: "Nagaram Main Road",
+                    speciality: "Famous for Chicken Biryani & Mutton Curry",
+                    menu: {
+                        "Biryani": [
+                            { name: "Chicken Biryani", description: "Aromatic basmati rice with tender chicken", price: 280, id: "cb1" },
+                            { name: "Mutton Biryani", description: "Premium mutton with fragrant spices", price: 350, id: "mb1" },
+                            { name: "Egg Biryani", description: "Boiled eggs with flavorful rice", price: 200, id: "eb1" },
+                            { name: "Veg Biryani", description: "Mixed vegetables with aromatic rice", price: 180, id: "vb1" }
+                        ],
+                        "Curries": [
+                            { name: "Chicken Curry", description: "Spicy chicken curry with traditional spices", price: 220, id: "cc1" },
+                            { name: "Mutton Curry", description: "Rich and flavorful mutton curry", price: 280, id: "mc1" },
+                            { name: "Dal Tadka", description: "Yellow lentils with tempering", price: 120, id: "dt1" }
+                        ],
+                        "Breads": [
+                            { name: "Butter Naan", description: "Soft bread with butter", price: 60, id: "bn1" },
+                            { name: "Garlic Naan", description: "Naan with garlic and herbs", price: 70, id: "gn1" },
+                            { name: "Tandoori Roti", description: "Whole wheat bread from tandoor", price: 40, id: "tr1" }
+                        ]
+                    }
+                },
+                {
+                    id: 'paradise',
+                    name: "Paradise Food Court",
+                    cuisine: "Multi-cuisine",
+                    rating: 4.1,
+                    distance: "1.2 km",
+                    address: "Dammaiguda Cross Roads",
+                    speciality: "Biryani, Chinese, North Indian",
+                    menu: {
+                        "Biryani": [
+                            { name: "Paradise Special Biryani", description: "Signature chicken biryani", price: 320, id: "psb1" },
+                            { name: "Hyderabadi Dum Biryani", description: "Traditional dum cooked biryani", price: 300, id: "hdb1" }
+                        ],
+                        "Chinese": [
+                            { name: "Chicken Fried Rice", description: "Wok-tossed rice with chicken", price: 180, id: "cfr1" },
+                            { name: "Veg Manchurian", description: "Crispy vegetable balls in sauce", price: 160, id: "vm1" },
+                            { name: "Chicken 65", description: "Spicy fried chicken appetizer", price: 200, id: "c65" }
+                        ],
+                        "North Indian": [
+                            { name: "Butter Chicken", description: "Creamy tomato-based chicken curry", price: 250, id: "bc1" },
+                            { name: "Paneer Butter Masala", description: "Cottage cheese in rich gravy", price: 220, id: "pbm1" }
+                        ]
+                    }
+                },
+                {
+                    id: 'ccd',
+                    name: "Cafe Coffee Day",
+                    cuisine: "Cafe & Beverages",
+                    rating: 4.0,
+                    distance: "0.5 km",
+                    address: "Nagaram Circle",
+                    speciality: "Coffee, Sandwiches, Pastries",
+                    menu: {
+                        "Coffee": [
+                            { name: "Cappuccino", description: "Espresso with steamed milk foam", price: 120, id: "cap1" },
+                            { name: "Latte", description: "Espresso with steamed milk", price: 130, id: "lat1" },
+                            { name: "Cold Coffee", description: "Iced coffee with milk", price: 140, id: "cc2" }
+                        ],
+                        "Snacks": [
+                            { name: "Chicken Sandwich", description: "Grilled chicken with vegetables", price: 180, id: "cs1" },
+                            { name: "Veg Sandwich", description: "Fresh vegetables with mayo", price: 120, id: "vs1" },
+                            { name: "Chocolate Pastry", description: "Rich chocolate cake slice", price: 100, id: "cp1" }
+                        ]
+                    }
+                }
+            ]
+        };
+
+        // UI Management Functions
+        function showSection(section) {
+            // Hide all sections
+            document.getElementById('chatSection').style.display = 'none';
+            document.getElementById('menuSection').style.display = 'none';
+            document.getElementById('cartSection').style.display = 'none';
+            document.getElementById('paymentSection').style.display = 'none';
+            document.getElementById('trackingSection').style.display = 'none';
+            
+            // Show selected section
+            document.getElementById(section + 'Section').style.display = 'block';
+            
+            // Update header and navigation
+            const backBtn = document.getElementById('backBtn');
+            const quickActions = document.getElementById('quickActions');
+            
+            if (section === 'chat') {
+                backBtn.style.display = 'none';
+                quickActions.style.display = 'block';
+                document.getElementById('headerTitle').textContent = 'Restaurant Finder AI';
+                document.getElementById('headerSubtitle').textContent = 'Nagaram Dammaiguda, Hyderabad';
+            } else {
+                backBtn.style.display = 'block';
+                quickActions.style.display = 'none';
+                
+                if (section === 'menu') {
+                    document.getElementById('headerTitle').textContent = currentRestaurant.name;
+                    document.getElementById('headerSubtitle').textContent = 'Menu';
+                } else if (section === 'cart') {
+                    document.getElementById('headerTitle').textContent = 'Your Cart';
+                    document.getElementById('headerSubtitle').textContent = `${cart.length} items`;
+                } else if (section === 'payment') {
+                    document.getElementById('headerTitle').textContent = 'Payment';
+                    document.getElementById('headerSubtitle').textContent = 'Complete your order';
+                } else if (section === 'tracking') {
+                    document.getElementById('headerTitle').textContent = 'Order Tracking';
+                    document.getElementById('headerSubtitle').textContent = 'Track your order';
+                }
+            }
+            
+            currentView = section;
+        }
+
+        function goBack() {
+            if (currentView === 'menu') {
+                showSection('chat');
+            } else if (currentView === 'cart') {
+                showSection('chat');
+            } else if (currentView === 'payment') {
+                showSection('cart');
+            } else if (currentView === 'tracking') {
+                showSection('chat');
+            }
+        }
+
+        // Chat Functions
+        function addMessage(content, isUser = false, isHTML = false) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            
+            if (isHTML) {
+                contentDiv.innerHTML = content;
+            } else {
+                contentDiv.textContent = content;
+            }
+            
+            messageDiv.appendChild(contentDiv);
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function createRestaurantCard(restaurant) {
+            return `
+        <div class="restaurant-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                <div class="restaurant-name">${restaurant.name}</div>
+                <button class="add-to-cart-btn" onclick="showMenu('${restaurant.id}')" style="padding: 6px 10px; font-size: 11px;">
+                    🛒 Quick Order
+                </button>
+            </div>
+            <div class="restaurant-details">
+                📍 ${restaurant.address} • ${restaurant.distance}<br>
+                🍽️ ${restaurant.cuisine}<br>
+                ⭐ ${restaurant.speciality}
+            </div>
+            <div class="restaurant-rating">
+                <span class="stars">${'⭐'.repeat(Math.floor(restaurant.rating))}</span>
+                <span>${restaurant.rating}/5</span>
+                <button class="view-menu-btn" onclick="showMenu('${restaurant.id}')">View Full Menu</button>
+            </div>
+        </div>
+    `;
+        }
+
+        function findNearbyRestaurants() {
+            addMessage("Show me nearby restaurants", true);
+            
+            setTimeout(() => {
+                let restaurantHTML = "🍽️ Here are the top restaurants near Nagaram Dammaiguda:<br><br>";
+                
+                restaurantDatabase.nearby.forEach(restaurant => {
+                    restaurantHTML += createRestaurantCard(restaurant);
+                });
+                
+                restaurantHTML += "<br>Click 'View Menu' to see dishes and place orders!";
+                
+                addMessage(restaurantHTML, false, true);
+            }, 1000);
+        }
+
+        // Menu Functions
+        function showMenu(restaurantId) {
+            const restaurant = restaurantDatabase.nearby.find(r => r.id === restaurantId);
+            if (!restaurant) return;
+            
+            currentRestaurant = restaurant;
+            const menuContainer = document.getElementById('menuSection');
+            
+            let menuHTML = '';
+            
+            Object.keys(restaurant.menu).forEach(category => {
+                menuHTML += `
+                    <div class="menu-category">
+                        <div class="category-title">${category}</div>
+                `;
+                
+                restaurant.menu[category].forEach(item => {
+                    menuHTML += `
+                        <div class="menu-item">
+                            <div class="item-info">
+                                <div class="item-name">${item.name}</div>
+                                <div class="item-description">${item.description}</div>
+                                <div class="item-price">₹${item.price}</div>
+                            </div>
+                            <button class="add-to-cart-btn" onclick="addToCart('${restaurant.id}', '${item.id}')">
+                                Add to Cart
+                            </button>
+                        </div>
+                    `;
+                });
+                
+                menuHTML += '</div>';
+            });
+            
+            menuContainer.innerHTML = menuHTML;
+            showSection('menu');
+        }
+
+        // Cart Functions
+        function addToCart(restaurantId, itemId) {
+            const restaurant = restaurantDatabase.nearby.find(r => r.id === restaurantId);
+            if (!restaurant) return;
+            
+            let item = null;
+            Object.values(restaurant.menu).forEach(category => {
+                const foundItem = category.find(i => i.id === itemId);
+                if (foundItem) item = foundItem;
+            });
+            
+            if (!item) return;
+            
+            const existingItem = cart.find(cartItem => cartItem.id === itemId && cartItem.restaurantId === restaurantId);
+            
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({
+                    ...item,
+                    restaurantId: restaurantId,
+                    restaurantName: restaurant.name,
+                    quantity: 1
+                });
+            }
+            
+            updateCartUI();
+            
+            // Show success message
+            const button = event.target;
+            const originalText = button.textContent;
+            button.textContent = 'Added!';
+            button.style.background = '#28a745';
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.style.background = '#007bff';
+            }, 1000);
+        }
+
+        function updateCartUI() {
+            const cartCount = document.getElementById('cartCount');
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartCount.textContent = totalItems;
+            cartCount.style.display = totalItems > 0 ? 'flex' : 'none';
+        }
+
+        function showCart() {
+            const cartItems = document.getElementById('cartItems');
+            const cartTotal = document.getElementById('cartTotal');
+            const checkoutBtn = document.getElementById('checkoutBtn');
+            
+            if (cart.length === 0) {
+                cartItems.innerHTML = `
+                    <div class="empty-cart">
+                        <div style="font-size: 48px; margin-bottom: 20px;">🛒</div>
+                        <h3>Your cart is empty</h3>
+                        <p>Add some delicious items to get started!</p>
+                    </div>
+                `;
+                cartTotal.style.display = 'none';
+                checkoutBtn.disabled = true;
+            } else {
+                let cartHTML = '';
+                cart.forEach((item, index) => {
+                    cartHTML += `
+                        <div class="cart-item">
+                            <div class="cart-item-info">
+                                <div class="cart-item-name">${item.name}</div>
+                                <div class="cart-item-restaurant">From ${item.restaurantName}</div>
+                                <div class="quantity-controls">
+                                    <button class="qty-btn" onclick="updateQuantity(${index}, -1)">-</button>
+                                    <span style="margin: 0 10px; font-weight: bold;">${item.quantity}</span>
+                                    <button class="qty-btn plus" onclick="updateQuantity(${index}, 1)">+</button>
+                                    <span style="margin-left: 15px; font-weight: bold; color: #28a745;">₹${item.price * item.quantity}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                cartItems.innerHTML = cartHTML;
+                updateCartTotals();
+                cartTotal.style.display = 'block';
+                checkoutBtn.disabled = false;
+            }
+            
+            showSection('cart');
+        }
+
+        function updateQuantity(index, change) {
+            cart[index].quantity += change;
+            
+            if (cart[index].quantity <= 0) {
+                cart.splice(index, 1);
+            }
+            
+            updateCartUI();
+            showCart(); // Refresh cart display
+        }
+
+        function updateCartTotals() {
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const deliveryFee = subtotal > 0 ? 40 : 0;
+            const gst = Math.round(subtotal * 0.05);
+            const total = subtotal + deliveryFee + gst;
+            
+            document.getElementById('subtotal').textContent = `₹${subtotal}`;
+            document.getElementById('deliveryFee').textContent = `₹${deliveryFee}`;
+            document.getElementById('gst').textContent = `₹${gst}`;
+            document.getElementById('finalTotal').textContent = `₹${total}`;
+            document.getElementById('paymentTotal').textContent = total;
+        }
+
+        // Payment Functions
+        function showPayment() {
+            updateCartTotals();
+            showSection('payment');
+        }
+
+        function selectPaymentMethod(method) {
+            selectedPaymentMethod = method;
+            
+            // Update UI
+            document.querySelectorAll('.payment-method').forEach(el => {
+                el.classList.remove('selected');
+            });
+            event.target.classList.add('selected');
+            
+            // Show/hide payment details
+            document.getElementById('cardDetails').style.display = method === 'card' ? 'block' : 'none';
+            document.getElementById('upiDetails').style.display = method === 'upi' ? 'block' : 'none';
+        }
+
+        function processPayment() {
+            // Simulate payment processing
+            const button = event.target;
+            button.textContent = 'Processing...';
+            button.disabled = true;
+            
+            setTimeout(() => {
+                // Generate order number
+                const orderNumber = 'ORD' + Date.now().toString().slice(-6);
+                document.getElementById('orderNumber').textContent = orderNumber;
+                
+                // Store order number for tracking
+                localStorage.setItem('recentOrderNumber', orderNumber);
+                
+                // Clear cart
+                cart = [];
+                updateCartUI();
+                
+                // Show tracking
+                showSection('tracking');
+                startOrderTracking();
+                
+                button.textContent = 'Pay ₹' + document.getElementById('paymentTotal').textContent;
+                button.disabled = false;
+            }, 3000);
+        }
+
+        // Order Tracking Functions
+        function startOrderTracking() {
+            let currentStep = 1;
+            const steps = document.querySelectorAll('.status-step');
+            
+            const interval = setInterval(() => {
+                if (currentStep < steps.length) {
+                    steps[currentStep - 1].classList.remove('active');
+                    steps[currentStep - 1].classList.add('completed');
+                    steps[currentStep].classList.add('active');
+                    currentStep++;
+                    
+                    // Update delivery time
+                    const timeElement = document.getElementById('deliveryTime');
+                    const times = ['20-25 mins', '15-20 mins', '5-10 mins', 'Delivered!'];
+                    timeElement.textContent = times[currentStep - 1] || 'Delivered!';
+                } else {
+                    clearInterval(interval);
+                    steps[steps.length - 1].classList.remove('active');
+                    steps[steps.length - 1].classList.add('completed');
+                }
+            }, 10000); // Update every 10 seconds for demo
+        }
+
+        // Chat message handling
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (message === '') return;
+            
+            addMessage(message, true);
+            input.value = '';
+            
+            setTimeout(() => {
+                processUserMessage(message.toLowerCase());
+            }, 1000);
+        }
+
+        function processUserMessage(message) {
+            let response = "";
+            
+            if (message.includes('menu') || message.includes('order')) {
+                response = "Great! You can view menus by clicking 'View Menu' on any restaurant card. I'll show you nearby restaurants now.";
+                setTimeout(() => findNearbyRestaurants(), 1000);
+            } else if (message.includes('cart')) {
+                response = "You can view your cart by clicking the cart icon in the header. Add items from restaurant menus to start ordering!";
+            } else if (message.includes('payment') || message.includes('pay')) {
+                response = "We accept multiple payment methods including Cards, UPI, and Cash on Delivery. Add items to cart and proceed to checkout!";
+            } else if (message.includes('track') || message.includes('order status') || message.includes('delivery')) {
+                trackOrder();
+                return;
+            } else {
+                response = "I can help you find restaurants, view menus, place orders, and track deliveries in Nagaram Dammaiguda! Try clicking 'Nearby Restaurants' to get started.";
+            }
+            
+            addMessage(response);
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function findByCategory(category) {
+            addMessage(`Show me ${category} options`, true);
+            setTimeout(() => {
+                addMessage("Here are some great options! Click 'View Menu' on any restaurant to see their full menu and place orders.", false);
+                findNearbyRestaurants();
+            }, 1000);
+        }
+
+        function trackOrder() {
+            addMessage("Track my order", true);
+            
+            setTimeout(() => {
+                // Check if there are any recent orders to track
+                const hasRecentOrder = localStorage.getItem('recentOrderNumber');
+                
+                if (hasRecentOrder) {
+                    addMessage("🚚 Great! Let me show you your order tracking details.", false);
+                    setTimeout(() => {
+                        // Set up a sample order for tracking
+                        document.getElementById('orderNumber').textContent = hasRecentOrder;
+                        showSection('tracking');
+                        startOrderTracking();
+                    }, 1000);
+                } else {
+                    addMessage("📦 You don't have any recent orders to track. Once you place an order, you'll be able to track it here! Would you like to browse restaurants and place an order?", false);
+                }
+            }, 1000);
+        }
+
+        // Initialize app
+        setTimeout(() => {
+            addMessage("💡 Click 'View Menu' on any restaurant to see dishes and start ordering! Your cart will be saved as you browse.");
+        }, 2000);
+    </script>
+</body>
+</html>
